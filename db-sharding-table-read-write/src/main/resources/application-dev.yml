@@ -1,0 +1,53 @@
+spring:
+  shardingsphere:
+    props:
+      sql: show
+    datasource:
+      names: master0,master1,slave0,slave1
+      master0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_master?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+      master1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_master1?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+      slave0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_slave?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+      slave1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_slave1?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+    sharding:
+      default-data-source-name: master0
+      master-slave-rules:
+        ds0:
+          master-data-source-name: master0
+          slave-data-source-names: master0
+        ds1:
+          master-data-source-name: master1
+          slave-data-source-names: slave1
+        ds2:
+          master-data-source-name: master1
+          slave-data-source-names: slave1
+      tables:
+        user:
+          actual-data-nodes: ds0.user,ds$->{0..1}.user_${0..3}
+          database-strategy:
+            inline:
+              sharding-column: data_source
+              algorithm-expression: ds$->{data_source % 2}
+          table-strategy:
+            inline:
+              sharding-column: id
+              algorithm-expression: user_${id.longValue() % 4}

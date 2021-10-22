@@ -1,0 +1,31 @@
+spring:
+  shardingsphere:
+    props:
+      sql: show
+    datasource:
+      names: master,slave
+      master:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_master?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+      slave:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://47.105.165.183:3306/order_slave?characterEncoding=UTF-8&serverTimezone=GMT&useSSL=false
+        username: root
+        password: root1234@#
+    sharding:
+      default-data-source-name: master
+      master-slave-rules:
+        ds0:
+          master-data-source-name: master
+          slave-data-source-names: slave
+      tables:
+        user:
+          actual-data-nodes: ds0.user_${0..3}
+          table-strategy:
+            inline:
+              sharding-column: id
+              algorithm-expression: user_${id.longValue() % 4}
